@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '../layout/Layout'
+import sliders from './test/routers'
 
 /**
 * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
@@ -25,6 +26,20 @@ export const constantRouterMap = [
     component: () => import('@/views/login'),
     hidden: true
   },
+// { path: '/login',
+//     meta: { title: '菜单', noCache: true },
+//     //component: () => import('@/views/home'),
+//     component: () => import('@/views/system/menuN/index'),
+//     hidden: true
+//   },
+  //---test
+  // {
+  //   path: '/menuN',
+  //   meta: {title: '菜单', noCache: true},
+  //   component: () => import('@/views/system/menuN/index'),
+  //   hidden: true
+  // },
+  //---
   {
     path: '/404',
     component: () => import('@/views/features/404'),
@@ -56,9 +71,83 @@ export const constantRouterMap = [
         component: () => import('@/views/home'),
         name: '首页',
         meta: { title: '首页', icon: 'index', noCache: true, affix: true }
-      }
+      },
+      // sliders
     ]
   },
+
+
+//==========================================================================================
+
+
+//   {
+//     path: '/system',
+//     component: () => import('@/views/system/menuN/index'),
+//     hidden: true,
+//     redirect: 'menuN',
+//     children: [
+//        {
+//           path: 'menuN',
+//           component: () => import('@/views/system/menuN/index'),
+//           name: '菜单',
+//           meta: { title: '菜单', icon: 'menu', noCache: true, affix: true}
+//        }
+//     ]
+//   },
+// //---------------
+// {
+//   path: '/system',
+//     component: () => import('@/views/system/project/index'),
+//   hidden: true,
+//   redirect: 'project',
+//   children: [
+//   {
+//     path: 'project',
+//     component: () => import('@/views/system/project/index'),
+//   name: '项目',
+//   meta: { title: '项目', icon: 'zujian', noCache: true, affix: true}
+// }
+// ]
+// },
+// //---------------
+// {
+//   path: '/system',
+//     component: () => import('@/views/system/area/index'),
+//   hidden: true,
+//   redirect: 'area',
+//   children: [
+//   {
+//     path: 'area',
+//     component: () => import('@/views/system/area/index'),
+//   name: '业务区域',
+//   meta: { title: '业务区域', icon: 'dept', noCache: true, affix: true}
+// }
+// ]
+// },
+// //-------------
+// {
+//   path: '/system',
+//     component: () => import('@/views/system/resource/index'),
+//   hidden: true,
+//   redirect: 'resource',
+//   children: [
+//   {
+//     path: 'resource',
+//     component: () => import('@/views/system/resource/index'),
+//   name: '资源',
+//   meta: { title: '资源', icon: 'permission', noCache: true, affix: true}
+// }
+// ]
+// },
+
+
+
+
+//=============================================================================================================
+
+
+
+
   {
     path: '/user',
     component: Layout,
@@ -73,7 +162,7 @@ export const constantRouterMap = [
       }
     ]
   }
-  // { path: '*', redirect: '/404', hidden: true }
+   //{ path: '*', redirect: '/404', hidden: true }
 ]
 
 export default new Router({

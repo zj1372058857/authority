@@ -16,9 +16,11 @@ router.beforeEach((to, from, next) => {
     document.title = to.meta.title + ' - ' + Config.webName
   }
   NProgress.start() // start progress bar
-  if (getToken()) {
+   if (getToken()) {
+  // if (true){                          //不判断，直接进，临时加
     // 已登录且要跳转的页面是登录页
     if (to.path === '/login') {
+      //debugger
       next({ path: '/' })
       NProgress.done() // if current page is dashboard will not trigger	afterEach hook, so manually handle it
     } else {
@@ -54,7 +56,94 @@ router.beforeEach((to, from, next) => {
 
 export const loadMenus = (next, to) => {
   buildMenus().then(res => {
-    const asyncRouter = filterAsyncRouter(res)
+    // let array = [
+    //   {
+    //     "alwaysShow": true,
+    //     "component": "Layout",
+    //     "name": "系统管理",
+    //     "path": "/system",
+    //     "redirect": "noredirect",
+    //     "meta": {
+    //       "icon": "system",
+    //       "title": "系统管理"
+    //     },
+    //     "children": [
+    //       {
+    //         "component": "system/menuN/index",
+    //         "name": "菜单管理",
+    //         "path": "menuN",
+    //         "meta": {
+    //           "icon": "menu",
+    //           "title": "菜单管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/area/index",
+    //         "name": "区域管理",
+    //         "path": "area",
+    //         "meta": {
+    //           "icon": "area",
+    //           "title": "区域管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/project/index",
+    //         "name": "项目管理",
+    //         "path": "project",
+    //         "meta": {
+    //           "icon": "project",
+    //           "title": "项目管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/resource/index",
+    //         "name": "资源管理",
+    //         "path": "resource",
+    //         "meta": {
+    //           "icon": "resource",
+    //           "title": "资源管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/role/index",
+    //         "name": "角色管理",
+    //         "path": "role",
+    //         "meta": {
+    //           "icon": "role",
+    //           "title": "角色管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/shop/index",
+    //         "name": "门店管理",
+    //         "path": "shop",
+    //         "meta": {
+    //           "icon": "shop",
+    //           "title": "门店管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/user-group/index",
+    //         "name": "用户组管理",
+    //         "path": "user-group",
+    //         "meta": {
+    //           "icon": "user-group",
+    //           "title": "用户组管理"
+    //         }
+    //       },
+    //       {
+    //         "component": "system/userN/index",
+    //         "name": "用户管理",
+    //         "path": "userN",
+    //         "meta": {
+    //           "icon": "userN",
+    //           "title": "用户管理"
+    //         }
+    //       }
+    //     ]
+    //   }
+    // ]
+    const asyncRouter = filterAsyncRouter(res.body)
     asyncRouter.push({ path: '*', redirect: '/404', hidden: true })
     store.dispatch('GenerateRoutes', asyncRouter).then(() => { // 存储路由
       router.addRoutes(asyncRouter) // 动态添加可访问路由表

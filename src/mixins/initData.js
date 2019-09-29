@@ -14,14 +14,17 @@ export default {
       return new Promise((resolve, reject) => {
         this.loading = true
         initData(this.url, this.params).then(res => {
-          this.total = res.totalElements
-          this.data = res.content
+          this.total = res.body.totalElements,
+          this.data = res.body.content
+          for(let i=0; i<res.body.content.length; i++){
+            this.data[i]['index'] = (i+1) + this.page*this.size
+          }
           setTimeout(() => {
             this.loading = false
           }, this.time)
           resolve(res)
         }).catch(err => {
-          this.loading = false
+          this.loading = false,
           reject(err)
         })
       })

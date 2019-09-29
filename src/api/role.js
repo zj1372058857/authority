@@ -3,23 +3,25 @@ import request from '@/utils/request'
 // 获取所有的Role
 export function getAll() {
   return request({
-    url: 'api/roles/all',
-    method: 'get'
+    url: '/role/queryRoleByCondition',
+    method: 'post',
+    data: {page: 0, size: 999}
   })
 }
 
 export function add(data) {
   return request({
-    url: 'api/roles',
+    url: '/role/insertRole',
     method: 'post',
     data
   })
 }
 
-export function get(id) {
+export function get(data) {
   return request({
-    url: 'api/roles/' + id,
-    method: 'get'
+    url: '/role/queryRoleByCondition',
+    method: 'post',
+    data: {page: 0, size: 10}
   })
 }
 
@@ -30,33 +32,34 @@ export function getLevel() {
   })
 }
 
-export function del(id) {
+export function del(data) {
   return request({
-    url: 'api/roles/' + id,
-    method: 'delete'
+    url: '/role/deleteRoleById',
+    method: 'post',
+    data: {id: data}
   })
 }
 
 export function edit(data) {
   return request({
-    url: 'api/roles',
-    method: 'put',
+    url: '/role/updateRoleById',
+    method: 'post',
     data
   })
 }
 
-export function editPermission(data) {
+export function editResource(data) {
   return request({
-    url: 'api/roles/permission',
-    method: 'put',
+    url: '/role/updateRoleRelation',
+    method: 'post',
     data
   })
 }
 
 export function editMenu(data) {
   return request({
-    url: 'api/roles/menu',
-    method: 'put',
+    url: '/role/updateRoleRelation',
+    method: 'post',
     data
   })
 }

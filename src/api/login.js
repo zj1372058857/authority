@@ -2,12 +2,11 @@ import request from '@/utils/request'
 
 export function login(username, password, code, uuid) {
   return request({
-    url: 'auth/login',
+    url: '/authority/login',
     method: 'post',
     data: {
       username,
       password,
-      code,
       uuid
     }
   })

@@ -60,12 +60,12 @@ export default {
     }
   },
   mounted() {
-    get().then(res => {
-      this.count.newIp = res.newIp
-      this.count.newVisits = res.newVisits
-      this.count.recentIp = res.recentIp
-      this.count.recentVisits = res.recentVisits
-    })
+    // get().then(res => {
+    //   this.count.newIp = res.newIp
+    //   this.count.newVisits = res.newVisits
+    //   this.count.recentIp = res.recentIp
+    //   this.count.recentVisits = res.recentVisits
+    // })
   }
 }
 </script>

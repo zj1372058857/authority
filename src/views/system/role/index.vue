@@ -5,10 +5,10 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
-      <el-input v-model="query.value" clearable placeholder="输入名称搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery"/>
+      <el-input v-model="query.roleName" clearable placeholder="输入角色名称搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" @change="toQuery"/>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
-      <div v-permission="['ADMIN','ROLES_ALL','ROLES_CREATE']" style="display: inline-block;margin: 0px 2px;">
+      <div style="display: inline-block;margin: 0px 2px;">
         <el-button
           class="filter-item"
           size="mini"
@@ -26,25 +26,23 @@
             <div id="opt" style="float: right">
               <el-radio-group v-model="opt" size="mini">
                 <el-radio-button label="菜单分配"/>
-                <el-radio-button label="权限分配"/>
+                <el-radio-button label="资源分配"/>
               </el-radio-group>
             </div>
           </div>
           <el-table v-loading="loading" :data="data" highlight-current-row size="small" style="width: 100%;" @current-change="handleCurrentChange">
-            <el-table-column prop="name" label="名称"/>
-            <el-table-column prop="dataScope" label="数据权限"/>
-            <el-table-column prop="level" label="角色级别"/>
+            <el-table-column prop="roleName" label="名称"/>
+            <el-table-column prop="projectName" label="所属项目"/>
             <el-table-column :show-overflow-tooltip="true" prop="remark" label="描述"/>
-            <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期">
+            <el-table-column :show-overflow-tooltip="true" prop="cT" label="创建日期">
               <template slot-scope="scope">
-                <span>{{ parseTime(scope.row.createTime) }}</span>
+                <span>{{ parseTime(scope.row.cT) }}</span>
               </template>
             </el-table-column>
-            <el-table-column v-if="checkPermission(['ADMIN','ROLES_ALL','ROLES_EDIT','ROLES_DELETE'])" label="操作" width="130px" align="center">
+            <el-table-column label="操作" width="130px" align="center">
               <template slot-scope="scope">
-                <el-button v-permission="['ADMIN','ROLES_ALL','ROLES_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
+                <el-button size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
                 <el-popover
-                  v-permission="['ADMIN','ROLES_ALL','ROLES_DELETE']"
                   :ref="scope.row.id"
                   placement="top"
                   width="180">
@@ -76,7 +74,6 @@
               <span class="role-span">菜单分配</span>
             </el-tooltip>
             <el-button
-              v-permission="['ADMIN','ROLES_ALL','ROLES_EDIT']"
               :disabled="!showButton"
               :loading="menuLoading"
               icon="el-icon-check"
@@ -89,34 +86,36 @@
             ref="menu"
             :data="menus"
             :default-checked-keys="menuIds"
-            :props="defaultProps"
+            :props="defaultPropsToMenu"
             accordion
             show-checkbox
-            node-key="id"/>
+            node-key="id"
+          />
         </el-card>
-        <el-card v-show="opt === '权限分配'" class="box-card" shadow="never">
+        <el-card v-show="opt === '资源分配'" class="box-card" shadow="never">
           <div slot="header" class="clearfix">
-            <el-tooltip class="item" effect="dark" content="选择指定角色分配权限" placement="top">
-              <span class="role-span">权限分配</span>
+            <el-tooltip class="item" effect="dark" content="若不可选，先选择对应菜单" placement="top">
+              <span class="role-span">资源分配</span>
             </el-tooltip>
             <el-button
-              v-permission="['ADMIN','ROLES_ALL','ROLES_EDIT']"
               :disabled="!showButton"
-              :loading="permissionLoading"
+              :loading="resourceLoading"
               icon="el-icon-check"
               size="mini"
               style="float: right; padding: 6px 9px"
               type="primary"
-              @click="savePermission">保存</el-button>
+              @click="saveResource">保存</el-button>
           </div>
-          <el-tree
-            ref="permission"
-            :data="permissions"
-            :default-checked-keys="permissionIds"
-            :props="defaultProps"
-            show-checkbox
-            accordion
-            node-key="id"/>
+          <div>
+            <el-tree
+              ref="resource"
+              :data="resources"
+              :default-checked-keys="resourceIds"
+              :props="defaultProps"
+              show-checkbox
+              accordion
+              node-key="label"/>
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -127,27 +126,31 @@
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
 import { del } from '@/api/role'
-import { getPermissionTree } from '@/api/permission'
-import { getMenusTree } from '@/api/menu'
+import { getResourceTree } from '@/api/resource'
+import { getMenuTrees } from '@/api/menuN'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
-import { editPermission, editMenu, get } from '@/api/role'
+import { editResource, editMenu, get } from '@/api/role'
 export default {
   components: { eForm },
   mixins: [initData],
   data() {
     return {
+      defaultPropsToMenu: {
+          children: 'children',
+          label: 'label',
+          projectId: 'projectId'
+      },
       defaultProps: {
         children: 'children',
-        label: 'label'
+        label: 'alias',
+        projectId: 'projectId'
       },
-      currentId: 0, permissionLoading: false, menuLoading: false, showButton: false, opt: '菜单分配',
-      delLoading: false, permissions: [], permissionIds: [], menus: [], menuIds: []
+      currentId: 0, resourceLoading: false, menuLoading: false, showButton: false, opt: '菜单分配',
+      delLoading: false, menus: [], menuIds: [], resourceIds: [], resources: []
     }
   },
   created() {
-    this.getPermissions()
-    this.getMenus()
     this.$nextTick(() => {
       this.init()
     })
@@ -156,59 +159,60 @@ export default {
     parseTime,
     checkPermission,
     beforeInit() {
-      this.$refs.permission.setCheckedKeys([])
-      this.$refs.menu.setCheckedKeys([])
-      this.showButton = false
-      this.url = 'api/roles'
-      const sort = 'level,asc'
-      const query = this.query
-      const value = query.value
-      this.params = { page: this.page, size: this.size, sort: sort }
-      if (value) { this.params['name'] = value }
-      return true
+      this.$refs.resource.setCheckedKeys([]);
+      this.$refs.menu.setCheckedKeys([]);
+      this.showButton = false;
+      this.url = '/role/queryRoleByCondition';
+      const query = this.query;
+      const value = query.roleName;
+      this.params = { pageIndex: this.page+1, pageSize: this.size };
+      if (value) { this.params['roleName'] = value };
+      return true;
     },
     subDelete(id) {
-      this.delLoading = true
+      this.delLoading = true;
       del(id).then(res => {
-        this.delLoading = false
-        this.$refs[id].doClose()
-        this.dleChangePage()
-        this.init()
-        this.$notify({
-          title: '删除成功',
-          type: 'success',
-          duration: 2500
-        })
+        this.delLoading = false;
+        this.$refs[id].doClose();
+        if (res.success){
+            this.dleChangePage();
+            this.init();
+            this.$notify({
+                title: '删除成功',
+                type: 'success',
+                duration: 2500
+            });
+        }else{
+            this.$notify({
+                title: res.message,
+                type: res.success,
+                duration: 2500
+            });
+        }
       }).catch(err => {
-        this.delLoading = false
-        this.$refs[id].doClose()
-        console.log(err.response.data.message)
-      })
-    },
-    getPermissions() {
-      getPermissionTree().then(res => {
-        this.permissions = res
-      })
-    },
-    getMenus() {
-      getMenusTree().then(res => {
-        this.menus = res
+        this.delLoading = false;
+        this.$refs[id].doClose();
+        console.log(err.message);
       })
     },
     handleCurrentChange(val) {
       if (val) {
         const _this = this
         // 清空权限与菜单的选中
-        this.$refs.permission.setCheckedKeys([])
-        this.$refs.menu.setCheckedKeys([])
+          this.$refs.resource.setCheckedKeys([])
+          this.$refs.menu.setCheckedKeys([])
         // 保存当前的角色id
         this.currentId = val.id
+        // 储存projectId
+        this.currentProjectId = val.projectId;
         // 点击后显示按钮
         this.showButton = true
         // 初始化
         this.menuIds = []
-        this.permissionIds = []
+        this.resourceIds = []
+        //this.permissionIds = []
         // 菜单数据需要特殊处理
+        if(!val.menus){return;}
         val.menus.forEach(function(data, index) {
           let add = true
           for (let i = 0; i < val.menus.length; i++) {
@@ -221,83 +225,133 @@ export default {
             _this.menuIds.push(data.id)
           }
         })
-        // 处理权限数据
-        val.permissions.forEach(function(data, index) {
-          _this.permissionIds.push(data.id)
+        if(!val.resources){return;}
+        val.resources.forEach(function(data, index){
+            let obj = {resourceId: data.id, alias: data.alias};
+            _this.resourceIds.push(JSON.stringify(obj));
         })
+        // 选择过滤
+          // 过滤前先赋予菜单
+          getMenuTrees().then(res => {
+              // 根据projectId过滤菜单
+              this.menus = this.handleMenus(res.body, val.projectId);
+          })
+          // 过滤前先赋予资源
+          getResourceTree(val.projectId).then(res => {
+              this.resources = this.changeResource(res.body.children, val.menus);
+          })
       }
     },
-    savePermission() {
-      this.permissionLoading = true
-      const role = { id: this.currentId, permissions: [] }
-      this.$refs.permission.getCheckedKeys().forEach(function(data, index) {
-        const permission = { id: data }
-        role.permissions.push(permission)
+    changeResource(array, menus){
+        for (let i in menus){
+            for (let j in array){
+                array[j].alias = array[j].menuName;
+                if (menus[i].id == array[j].id){
+                    array[j].disabled = false;
+                    for (let k in array[j].children){
+                        array[j].children[k].disabled = false;
+                    }
+                }
+            }
+        }
+        return array;
+    },
+    handleMenus(data, projectId){
+        for (let i=0; i<data.length; i++){
+            if (data[i].projectId !== projectId){
+                data.splice(i, 1);
+                i--;
+            }else if (data[i].children !== null && data[i].children !== undefined && data[i].children.length>0){
+                this.handleMenus(data[i].children, projectId)
+            }
+        }
+        return data;
+    },
+    saveResource() {
+      this.resourceLoading = true
+      const role = { id: this.currentId, resources: [] }
+      this.$refs.resource.getCheckedKeys().forEach(function(data, index) {
+          let obj = JSON.parse(data);
+          if (obj.resourceId !== undefined){
+              const resource = { id: obj.resourceId};
+              role.resources.push(resource);
+          };
       })
-      editPermission(role).then(res => {
-        this.$notify({
-          title: '保存成功',
-          type: 'success',
-          duration: 2500
-        })
-        this.permissionLoading = false
-        this.update()
+      editResource(role).then(res => {
+          if (res.success){
+              this.$notify({
+                  title: '保存成功',
+                  type: 'success',
+                  duration: 2500
+              });
+              this.update();
+          }else{
+              this.$notify({
+                  title: res.message,
+                  type: res.success,
+                  duration: 2500
+              });
+          };
+          this.resourceLoading = false;
       }).catch(err => {
-        this.permissionLoading = false
-        console.log(err.response.data.message)
+        this.resourceLoading = false
+        console.log(err.message)
       })
     },
     saveMenu() {
       this.menuLoading = true
       const role = { id: this.currentId, menus: [] }
-      // 得到半选的父节点数据，保存起来
-      this.$refs.menu.getHalfCheckedNodes().forEach(function(data, index) {
-        const permission = { id: data.id }
-        role.menus.push(permission)
+      this.$refs.menu.getHalfCheckedKeys().forEach(function (data, index) {
+          const menu = { id: data };
+          role.menus.push(menu);
       })
-      // 得到已选中的 key 值
       this.$refs.menu.getCheckedKeys().forEach(function(data, index) {
-        const permission = { id: data }
-        role.menus.push(permission)
+        const menu = { id: data }
+        role.menus.push(menu)
       })
       editMenu(role).then(res => {
-        this.$notify({
-          title: '保存成功',
-          type: 'success',
-          duration: 2500
-        })
-        this.menuLoading = false
-        this.update()
+          if (res.success){
+              this.$notify({
+                  title: '保存成功',
+                  type: 'success',
+                  duration: 2500
+              });
+              this.update()
+              this.beforeInit();
+          }else{
+              this.$notify({
+                  title: res.message,
+                  type: res.success,
+                  duration: 2500
+              });
+          }
+          this.menuLoading = false;
       }).catch(err => {
         this.menuLoading = false
-        console.log(err.response.data.message)
+        console.log(err.message)
       })
     },
     update() {
       // 无刷新更新 表格数据
-      get(this.currentId).then(res => {
-        for (let i = 0; i < this.data.length; i++) {
-          if (res.id === this.data[i].id) {
-            this.data[i] = res
-            break
-          }
-        }
+      get(this.page, this.size).then(res => {
+          this.data = res.body.content
       })
     },
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
+      this.$refs.form.getProjects()
     },
     edit(data) {
       this.isAdd = false
       const _this = this.$refs.form
-      _this.deptIds = []
-      _this.form = { id: data.id, name: data.name, remark: data.remark, depts: data.depts, dataScope: data.dataScope, level: data.level }
-      if (_this.form.dataScope === '自定义') {
-        _this.getDepts()
-      }
-      for (let i = 0; i < _this.form.depts.length; i++) {
-        _this.deptIds[i] = _this.form.depts[i].id
+      _this.getProjects()
+      _this.form = {
+          id: data.id,
+          roleName: data.roleName,
+          remark: data.remark,
+          projectId: data.projectId,
+          status: data.status.toString()
       }
       _this.dialog = true
     }

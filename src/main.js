@@ -15,8 +15,9 @@ import permission from './components/permission'
 import store from './store'
 
 import '@/icons' // icon
-import './router/index' // permission control
-
+import './router' // permission control
+import VueResource from 'vue-resource'
+Vue.use(VueResource)
 Vue.use(mavonEditor)
 Vue.use(permission)
 Vue.use(ElementUI, { locale })

@@ -51,12 +51,29 @@ const user = {
     // 获取用户信息
     GetInfo({ commit }) {
       return new Promise((resolve, reject) => {
-        getInfo().then(res => {
-          setUserInfo(res, commit)
-          resolve(res)
-        }).catch(error => {
-          reject(error)
-        })
+        //---------假信息---------
+        let obj = {
+          "avatar": "https://i.loli.net/2019/04/04/5ca5b971e1548.jpeg",
+          "roles": [
+            "ADMIN"
+          ],
+          "createTime": 1569376628,
+          "dept": "技术中心",
+          "email": "admin@163.com",
+          "enabled": true,
+          "job": "超级管理员",
+          "phone": 18888888888,
+          "username": "admin"
+        };
+        setUserInfo(obj, commit);
+        resolve(obj);
+        //---------------------
+        // getInfo().then(res => {
+        //   setUserInfo(res, commit)
+        //   resolve(res)
+        // }).catch(error => {
+        //   reject(error)
+        // })
       })
     },
 

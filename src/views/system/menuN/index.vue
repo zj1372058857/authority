@@ -3,10 +3,10 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
-      <el-input v-model="query.value" clearable placeholder="输入名称搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery"/>
+      <el-input v-model="query.menuName" clearable placeholder="输入菜单名称搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" @change="toQuery"/>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
-      <div v-permission="['ADMIN','PERMISSION_ALL','PERMISSION_CREATE']" style="display: inline-block;margin: 0px 2px 0px">
+      <div style="display: inline-block;margin: 0px 2px;">
         <el-button
           class="filter-item"
           size="mini"
@@ -20,7 +20,7 @@
           size="mini"
           type="warning"
           icon="el-icon-more"
-          @click="changeExpand">{{ $parent.expand ? '折叠' : '展开' }}</el-button>
+          @click="changExpand">{{ $parent.expand ? '折叠' : '展开' }}</el-button>
         <eForm ref="form" :is-add="true"/>
       </div>
     </div>
@@ -28,16 +28,41 @@
     <eForm ref="form" :is-add="isAdd"/>
     <!--表格渲染-->
     <tree-table v-loading="loading" :data="data" :expand-all="expand" :columns="columns" size="small">
-      <el-table-column prop="createTime" label="创建日期">
+      <el-table-column prop="projectName" label="所属项目" align="center">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
+          <span>{{scope.row.projectName}}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="checkPermission(['ADMIN','PERMISSION_ALL','PERMISSION_EDIT','PERMISSION_DELETE'])" label="操作" width="130px" align="center">
+      <el-table-column prop="icons" label="图标" align="center" width="80px">
         <template slot-scope="scope">
-          <el-button v-permission="['ADMIN','PERMISSION_ALL','PERMISSION_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
+          <svg-icon :icon-class="scope.row.icons" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="type" label="类型" align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.type===0">正常菜单</span>
+          <span v-else-if="scope.row.type===1">虚拟菜单</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="url" label="访问地址" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.url}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="sort" align="center" width="100px" label="排序">
+        <template slot-scope="scope">
+          <el-tag>{{ scope.row.sort }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="ct" label="创建日期" align="center">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.ct) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column  label="操作" width="130px" align="center">
+        <template slot-scope="scope">
+          <el-button  size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
           <el-popover
-            v-permission="['ADMIN','PERMISSION_ALL','PERMISSION_DELETE']"
             :ref="scope.row.id"
             placement="top"
             width="200">
@@ -58,22 +83,19 @@
 import checkPermission from '@/utils/permission' // 权限判断函数
 import treeTable from '@/components/TreeTable'
 import initData from '@/mixins/initData'
-import { del } from '@/api/permission'
+import initDict from '@/mixins/initDict'
+import { del } from '@/api/menuN'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
   components: { treeTable, eForm },
-  mixins: [initData],
+  mixins: [initData, initDict],
   data() {
     return {
       columns: [
         {
           text: '名称',
-          value: 'name'
-        },
-        {
-          text: '别名',
-          value: 'alias'
+          value: 'menuName'
         }
       ],
       delLoading: false, expand: true
@@ -88,12 +110,11 @@ export default {
     parseTime,
     checkPermission,
     beforeInit() {
-      this.url = 'api/permissions'
-      const sort = 'id,desc'
+      this.url = '/menu/queryMenuByCondition'
       const query = this.query
-      const value = query.value
-      this.params = { page: this.page, size: this.size, sort: sort }
-      if (value) { this.params['name'] = value }
+      const value = query.menuName
+      this.params = { pageIndex: this.page+1, pageSize: this.size }
+      if (value) { this.params['menuName'] = value }
       return true
     },
     subDelete(id) {
@@ -101,31 +122,50 @@ export default {
       del(id).then(res => {
         this.delLoading = false
         this.$refs[id].doClose()
-        this.init()
-        this.$notify({
-          title: '删除成功',
-          type: 'success',
-          duration: 2500
-        })
+        if (res.success){
+            this.init()
+            this.$notify({
+                title: '删除成功',
+                type: 'success',
+                duration: 2500
+            })
+        }else{
+            this.$notify({
+                title: this.message,
+                type: this.success,
+                duration: 2500
+            })
+        }
       }).catch(err => {
         this.delLoading = false
         this.$refs[id].doClose()
-        console.log(err.response.data.message)
+        console.log(err.message)
       })
     },
     add() {
       this.isAdd = true
-      this.$refs.form.getPermissions()
+      this.$refs.form.getMenuNs()
+      this.$refs.form.getProjects()
       this.$refs.form.dialog = true
     },
     edit(data) {
       this.isAdd = false
       const _this = this.$refs.form
-      _this.getPermissions()
-      _this.form = { id: data.id, name: data.name, alias: data.alias, pid: data.pid }
+      _this.getMenuNs()
+      _this.getProjects()
+      _this.form = {
+          id: data.id,
+          menuName: data.menuName,
+          projectId: data.projectId,
+          sort: data.sort,
+          pid: data.pid,
+          url: data.url,
+          icons: data.icons,
+          type: data.type
+      }
       _this.dialog = true
     },
-    changeExpand() {
+    changExpand() {
       this.expand = !this.expand
       this.init()
     }

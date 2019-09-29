@@ -10,8 +10,8 @@ export function getMenusTree() {
 
 export function buildMenus() {
   return request({
-    url: 'api/menus/build',
-    method: 'get'
+    url: '/user/queryMenuOfUser',
+    method: 'post'
   })
 }
 

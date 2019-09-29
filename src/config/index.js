@@ -13,7 +13,7 @@ export default {
   /**
    * @description 此处修改网站名称
    */
-  webName: 'EL-ADMIN',
+  webName: 'QING-MAI',
   /**
    * @description 是否只保持一个子菜单的展开
    */
@@ -21,7 +21,7 @@ export default {
   /**
    * @description token key
    */
-  TokenKey: 'EL-ADMIN-TOEKN',
+  TokenKey: 'auth',
 
   /**
    * @description 请求超时时间，毫秒（默认2分钟）

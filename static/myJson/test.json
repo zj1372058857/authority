@@ -1,0 +1,50 @@
+{
+  "success": true,
+  "message": "",
+  "errorCode": 0,
+  "body": [
+    {
+      "id": 1,
+      "label": "菜单",
+      "children": []
+    },
+    {
+      "id": 2,
+      "label": "资源",
+      "children": [
+        {
+          "id": 3,
+          "label": "项目名",
+          "children": [
+            {
+              "label": "资源名",
+              "children": null,
+              "id": 4
+            },
+            {
+              "label": "资源名",
+              "children": null,
+              "id": 5
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "label": "项目名",
+          "children": [
+            {
+              "label": "资源名",
+              "children": null,
+              "id": 4
+            },
+            {
+              "label": "资源名",
+              "children": null,
+              "id": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

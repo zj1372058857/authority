@@ -39,12 +39,12 @@ export default {
     }
   },
   mounted() {
-    getChartData().then(res => {
-      this.chartData.visitsData = res.visitsData
-      this.chartData.ipData = res.ipData
-      this.weekDays = res.weekDays
-      this.initChart()
-    })
+    // getChartData().then(res => {
+    //   this.chartData.visitsData = res.visitsData
+    //   this.chartData.ipData = res.ipData
+    //   this.weekDays = res.weekDays
+    //   this.initChart()
+    // })
     if (this.autoResize) {
       this.__resizeHandler = debounce(() => {
         if (this.chart) {

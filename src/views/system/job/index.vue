@@ -40,9 +40,9 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建日期">
+      <el-table-column prop="sort" label="创建日期">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
+          <span>{{ scope.row.sort }}</span>
         </template>
       </el-table-column>
       <el-table-column v-if="checkPermission(['ADMIN','USERJOB_ALL','USERJOB_EDIT','USERJOB_DELETE'])" label="操作" width="130px" align="center">
@@ -138,6 +138,7 @@ export default {
       this.$refs.form.dialog = true
     },
     edit(data) {
+        console.log(data)
       this.isAdd = false
       const _this = this.$refs.form
       _this.getDepts()
@@ -146,7 +147,7 @@ export default {
         name: data.name,
         sort: data.sort,
         enabled: data.enabled.toString(),
-        createTime: data.createTime,
+        ct: data.ct,
         dept: { id: data.dept.id }
       }
       _this.deptId = data.dept.id
